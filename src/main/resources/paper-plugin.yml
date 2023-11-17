@@ -1,0 +1,4 @@
+name: island-totem
+version: '${version}'
+main: fr.elite.Island_totem
+api-version: '1.19'
