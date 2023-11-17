@@ -5,6 +5,15 @@ plugins {
 group = 'fr.elite.vanillaextended'
 version = '1.0'
 
+task copyJar(type: Copy) {
+    dependsOn build
+    from('build/libs')
+    into('C:\\Users\\Elite\\Desktop\\Test Server - Magical Sky\\plugins')
+    include('*.jar')
+}
+
+build.finalizedBy(copyJar)
+
 repositories {
     mavenCentral()
     maven {

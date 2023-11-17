@@ -1,4 +1,4 @@
 name: island-totem
 version: '${version}'
-main: fr.elite.Island_totem
+main: fr.elite.Main
 api-version: '1.19'
