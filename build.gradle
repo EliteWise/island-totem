@@ -58,4 +58,7 @@ processResources {
     filesMatching('paper-plugin.yml') {
         expand props
     }
+compileJava.options.encoding = 'UTF-8'
+compileTestJava.options.encoding = 'UTF-8'
+
 }

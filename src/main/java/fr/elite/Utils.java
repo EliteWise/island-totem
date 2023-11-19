@@ -2,11 +2,10 @@ package fr.elite;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
+import org.bukkit.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.codehaus.plexus.util.Base64;
 
@@ -23,6 +22,7 @@ public class Utils {
         ItemStack output = new ItemStack(Material.PLAYER_HEAD);
 
         SkullMeta outputMeta = (SkullMeta) output.getItemMeta();
+        outputMeta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "Totem d’île");
         GameProfile profile = new GameProfile(UUID.randomUUID(), null);
         profile.getProperties().put("textures", new Property("textures", textureValue));
         Field profileField = null;

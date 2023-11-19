@@ -1,7 +1,14 @@
 package fr.elite;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,5 +37,15 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
     @Override
     public void onDisable() {
 
+    }
+
+    @EventHandler
+    public void onPlayerPlaceTotem(BlockPlaceEvent e) {
+        Block placedBlock = e.getBlockPlaced();
+        Player player = e.getPlayer();
+        ItemStack itemInHand = e.getItemInHand();
+        if(placedBlock.getType() == Material.PLAYER_HEAD && itemInHand.getItemMeta().getDisplayName().contains("Totem d’île")) {
+            Bukkit.getServer().getWorld(player.getWorld().getName()).playSound(player.getLocation(), Sound.ITEM_GOAT_HORN_SOUND_0, 1, 1);
+        }
     }
 }
