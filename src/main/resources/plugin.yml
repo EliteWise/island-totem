@@ -1,0 +1,4 @@
+name: island-totem
+version: '0.1.0'
+main: fr.elite.Main
+api-version: '1.19'
