@@ -2,3 +2,4 @@ name: island-totem
 version: '${version}'
 main: fr.elite.Main
 api-version: '1.19'
+depend: [SmartInvs]

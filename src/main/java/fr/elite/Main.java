@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -46,6 +47,16 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
         ItemStack itemInHand = e.getItemInHand();
         if(placedBlock.getType() == Material.PLAYER_HEAD && itemInHand.getItemMeta().getDisplayName().contains("Totem d’île")) {
             Bukkit.getServer().getWorld(player.getWorld().getName()).playSound(player.getLocation(), Sound.ITEM_GOAT_HORN_SOUND_0, 1, 1);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerClickOnTotem(PlayerInteractEvent e) {
+        Player player = e.getPlayer();
+        Block clickedBlock = e.getClickedBlock();
+
+        if(clickedBlock.getType() == Material.PLAYER_HEAD) {
+            Inventory.INVENTORY.open(player);
         }
     }
 }
