@@ -1,5 +1,6 @@
 package fr.elite;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import org.bukkit.*;
@@ -9,10 +10,13 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.codehaus.plexus.util.Base64;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.UUID;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 
 public class Utils {
 
@@ -47,5 +51,11 @@ public class Utils {
         }
 
         Bukkit.getServer().addRecipe(recipe);
+    }
+
+    public static InventoryItem deserializeJsonFile(String filePath) throws IOException, JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        File file = new File(filePath);
+        return objectMapper.readValue(file, InventoryItem.class);
     }
 }

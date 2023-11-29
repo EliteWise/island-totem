@@ -6,7 +6,6 @@ import fr.minuskube.inv.content.InventoryContents;
 import fr.minuskube.inv.content.InventoryProvider;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -16,11 +15,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-public class Inventory implements InventoryProvider {
+public class InventoryManager implements InventoryProvider {
 
     public static final SmartInventory INVENTORY = SmartInventory.builder()
             .id("totem-inv")
-            .provider(new Inventory())
+            .provider(new InventoryManager())
             .size(3, 9)
             .title("Totem d’île")
             .build();

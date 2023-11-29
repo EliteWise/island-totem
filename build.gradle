@@ -35,6 +35,7 @@ dependencies {
     compileOnly "io.papermc.paper:paper-api:1.19.4-R0.1-SNAPSHOT"
     compileOnly 'com.mojang:authlib:1.5.25'
     compileOnly 'fr.minuskube.inv:smart-invs:1.2.7'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
 }
 
 def targetJavaVersion = 17

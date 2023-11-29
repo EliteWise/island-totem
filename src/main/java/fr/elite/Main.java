@@ -56,7 +56,7 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
         Block clickedBlock = e.getClickedBlock();
 
         if(clickedBlock.getType() == Material.PLAYER_HEAD) {
-            Inventory.INVENTORY.open(player);
+            InventoryManager.INVENTORY.open(player);
         }
     }
 }
