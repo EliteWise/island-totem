@@ -1,6 +1,9 @@
 package fr.elite;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -9,12 +12,17 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.net.http.WebSocket;
 import java.util.HashMap;
+import java.util.Map;
 
 public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNull Listener {
 
@@ -29,8 +37,17 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
 
     Utils utils = new Utils();
 
+    public static HashMap<Player, Integer> totemPoints = new HashMap<>();
+    private File configFile;
+
+    public final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    public Map<String, Object> gsonMap = new HashMap<>();
+
     @Override
     public void onEnable() {
+        configFile = new File(getDataFolder(), "inventory-items.json");
+        if (!configFile.exists()) saveResource(configFile.getName(), false);
+
         this.getServer().getPluginManager().registerEvents(this, this);
         utils.craftTotem(totemMaterials, totemCraftPattern, textureValue);
     }
@@ -54,9 +71,17 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
     public void onPlayerClickOnTotem(PlayerInteractEvent e) {
         Player player = e.getPlayer();
         Block clickedBlock = e.getClickedBlock();
+        if(e.getHand() == EquipmentSlot.HAND) return;
+        ItemStack itemInHand = player.getItemInHand();
 
         if(clickedBlock.getType() == Material.PLAYER_HEAD) {
-            InventoryManager.INVENTORY.open(player);
+            if(itemInHand.getType() == Material.EMERALD) {
+                itemInHand.setAmount(itemInHand.getAmount() - 1);
+                totemPoints.put(player, totemPoints.getOrDefault(player, 0) + 1);
+                player.sendMessage(ChatColor.GOLD + "[Totem d’île] " + ChatColor.YELLOW + "Votre émeraude a été converti en point pour ce totem.");
+            } else {
+                InventoryManager.INVENTORY.open(player);
+            }
         }
     }
 }

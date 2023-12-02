@@ -10,10 +10,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.io.IOException;
+import java.util.*;
 
 public class InventoryManager implements InventoryProvider {
 
@@ -30,32 +28,33 @@ public class InventoryManager implements InventoryProvider {
     public void init(Player player, InventoryContents contents) {
         contents.fillBorders(ClickableItem.empty(new ItemStack(Material.BLACK_STAINED_GLASS_PANE)));
 
-        List<String> lores = Arrays.asList("Ligne 1", "Ligne 2", "Ligne 3");
+        try {
+            List<InventoryItem> inventoryItem = Utils.deserializeJsonFile("inventory-items.json");
+            for(InventoryItem it : inventoryItem) {
+                contents.set(it.getPosition().getX(), it.getPosition().getY(), ClickableItem.of(addItemLores(Material.getMaterial(it.getMaterial()), it.getLores()),
+                        e -> player.sendMessage(ChatColor.GOLD + "[Totem d’île] " + ChatColor.valueOf(it.getColor()) + it.getMessage())));
+            }
 
-        contents.set(1, 1, ClickableItem.of(addItemLores(Material.GOLDEN_HOE, lores),
-                e -> player.sendMessage(ChatColor.GOLD + "Niveau: X/20")));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
-        contents.set(1, 2, ClickableItem.of(addItemLores(Material.COMPASS, lores),
-                e -> player.sendMessage(ChatColor.GOLD + "Niveau: X/20")));
-
-        contents.set(1, 4, ClickableItem.of(addItemLores(Material.EMERALD, lores),
-                e -> player.sendMessage(ChatColor.GOLD + "Nombres de points disponibles: X/20")));
-
-        contents.set(1, 6, ClickableItem.of(addItemLores(Material.GOLDEN_PICKAXE, lores),
-                e -> player.sendMessage(ChatColor.GOLD + "Niveau: X/20")));
     }
 
     @Override
     public void update(Player player, InventoryContents contents) {
     }
 
-    public ItemStack addItemLores(Material material, List<String> loreList) {
+    public ItemStack addItemLores(Material material, List<String> loreList) throws IOException {
         ItemStack itemStack = new ItemStack(material);
         ItemMeta itemMeta = itemStack.getItemMeta();
         List<String> formattedLoreList = new ArrayList<>();
+        List<InventoryItem> inventoryItem = Utils.deserializeJsonFile("inventory-items.json");
+        int index = 0;
         for(String lore : loreList) {
-            formattedLoreList.add(lore);
+            formattedLoreList.add(ChatColor.valueOf(inventoryItem.get(index).getColor()) + lore);
             formattedLoreList.add(" ");
+            index+=1;
         }
         formattedLoreList.remove(formattedLoreList.size() - 1);
         itemMeta.setLore(formattedLoreList);

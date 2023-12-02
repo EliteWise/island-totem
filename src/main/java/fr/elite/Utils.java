@@ -1,6 +1,7 @@
 package fr.elite;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import org.bukkit.*;
@@ -11,10 +12,10 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.codehaus.plexus.util.Base64;
 
 import java.io.File;
+import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 
@@ -53,9 +54,12 @@ public class Utils {
         Bukkit.getServer().addRecipe(recipe);
     }
 
-    public static InventoryItem deserializeJsonFile(String filePath) throws IOException, JsonProcessingException {
+    public static List<InventoryItem> deserializeJsonFile(String filePath) throws IOException, JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
-        File file = new File(filePath);
-        return objectMapper.readValue(file, InventoryItem.class);
+        InputStream inputStream = Main.class.getClassLoader().getResourceAsStream(filePath);
+        if (inputStream == null) {
+            throw new IOException("Cannot find resource: " + filePath);
+        }
+        return objectMapper.readValue(inputStream, new TypeReference<List<InventoryItem>>() {});
     }
 }

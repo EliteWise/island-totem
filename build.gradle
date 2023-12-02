@@ -1,18 +1,19 @@
 plugins {
     id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.1'
 }
 
 group = 'fr.elite.vanillaextended'
 version = '1.0'
 
 task copyJar(type: Copy) {
-    dependsOn build
+    dependsOn shadowJar
     from('build/libs')
     into('C:\\Users\\Elite\\Desktop\\Test Server - Magical Sky\\plugins')
-    include('*.jar')
+    include('*all.jar')
 }
 
-build.finalizedBy(copyJar)
+shadowJar.finalizedBy(copyJar)
 
 repositories {
     mavenCentral()
@@ -36,6 +37,14 @@ dependencies {
     compileOnly 'com.mojang:authlib:1.5.25'
     compileOnly 'fr.minuskube.inv:smart-invs:1.2.7'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
+}
+
+shadowJar {
+    dependencies {
+        include(dependency('com.fasterxml.jackson.core:jackson-databind:2.13.0'))
+        include(dependency('com.fasterxml.jackson.core:jackson-core:2.13.0'))
+        include(dependency('com.fasterxml.jackson.core:jackson-annotations:2.13.0'))
+    }
 }
 
 def targetJavaVersion = 17
