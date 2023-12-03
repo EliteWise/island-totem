@@ -3,8 +3,8 @@
     "material": "GOLDEN_HOE",
     "lores": [
       "Amélioration de la quantité de cultures obtenues",
-      "Niveau:",
-      "Points nécessaires pour débloquer le prochain niveau:"
+      "Niveau: {level}",
+      "Points nécessaires pour débloquer le prochain niveau: {points}"
     ],
     "message": "Votre compétence passe au niveau suppérieur !",
     "color": "YELLOW",
@@ -17,8 +17,8 @@
     "material": "COMPASS",
     "lores": [
       "Amélioration de la rapidité de production des cultures",
-      "Niveau:",
-      "Points nécessaires pour débloquer le prochain niveau:"
+      "Niveau: {level}",
+      "Points nécessaires pour débloquer le prochain niveau: {points}"
     ],
     "message": "Votre compétence passe au niveau suppérieur !",
     "color": "YELLOW",
@@ -31,7 +31,7 @@
     "material": "EMERALD",
     "lores": [
       "Informations",
-      "Nombres de points disponibles:",
+      "Nombres de points disponibles: {points}",
       "Ajoute un point au totem -> clic droit en tenant une émeraude. La consomme"
     ],
     "message": "Votre compétence passe au niveau suppérieur !",
@@ -45,8 +45,8 @@
     "material": "GOLDEN_PICKAXE",
     "lores": [
       "Améliorations de la quantité de minerais obtenus",
-      "Niveau:",
-      "Points nécessaires pour débloquer le prochain niveau:"
+      "Niveau: {level}",
+      "Points nécessaires pour débloquer le prochain niveau: {points}"
     ],
     "message": "Votre compétence passe au niveau suppérieur !",
     "color": "YELLOW",
