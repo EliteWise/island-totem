@@ -62,4 +62,22 @@ public class Utils {
         }
         return objectMapper.readValue(inputStream, new TypeReference<List<InventoryItem>>() {});
     }
+
+    public static int fortuneEnchantSimulation(int enchantLevel, Random random) {
+        if (enchantLevel > 0) {
+            // Create a list of weights for loots
+            List<Integer> weightedDrops = new ArrayList<>();
+            weightedDrops.add(1);
+            weightedDrops.add(1);
+
+            for (int i = 2; i <= enchantLevel + 1; i++) {
+                weightedDrops.add(i); // Weight of 1 for each additional number of loots
+            }
+
+            // Choose a number of loots at random according to weights
+            int randomIndex = random.nextInt(weightedDrops.size());
+            return weightedDrops.get(randomIndex);
+        }
+        return 0; // No Fortune enchantment applied
+    }
 }

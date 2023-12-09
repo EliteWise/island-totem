@@ -7,11 +7,14 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemBreakEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -21,8 +24,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.net.http.WebSocket;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNull Listener {
 
@@ -83,5 +88,44 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
                 InventoryManager.INVENTORY.open(player);
             }
         }
+    }
+
+    @EventHandler
+    public void onPlayerBreakBlock(BlockBreakEvent e) {
+        Player player = e.getPlayer();
+        Block block = e.getBlock();
+        ItemStack tool = player.getInventory().getItemInMainHand();
+        int enchantLevel = tool.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS);
+
+        int niv = 20;
+
+        // Chances init
+        double chanceDouble = (niv * niv) / (4.1 + 2.5);
+        double chanceQuadruple = chanceDouble / 3;
+
+        // Cancel the original drop
+        e.setDropItems(false);
+
+        double randomValue = Math.random() * 100; // Between 0 and 100
+
+        ItemStack addedDrop = block.getDrops().stream().findFirst().orElse(null);
+        if(addedDrop != null) {
+            // Check to *4 drops first
+            if (randomValue <= chanceQuadruple) {
+                player.sendMessage("+4");
+                addedDrop.setAmount(4);
+            } else if (randomValue <= chanceDouble) {
+                player.sendMessage("+2");
+                addedDrop.setAmount(2);
+            }
+
+            Random random = new Random();
+            int enchantLoot = Utils.fortuneEnchantSimulation(enchantLevel, random);
+            if(enchantLoot != 0) {
+                addedDrop.setAmount(addedDrop.getAmount() + enchantLoot);
+            }
+            player.getWorld().dropItemNaturally(block.getLocation(), addedDrop);
+        }
+
     }
 }
