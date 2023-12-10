@@ -2,10 +2,7 @@ package fr.elite;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -31,6 +28,8 @@ import java.util.Random;
 
 public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNull Listener {
 
+    public static NamespacedKey totemPluginKey;
+
     HashMap<Character, Material> totemMaterials = new HashMap<>() {{
         put('E', Material.EMERALD_BLOCK);
         put('P', Material.DIAMOND_PICKAXE);
@@ -50,6 +49,7 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
 
     @Override
     public void onEnable() {
+        totemPluginKey = new NamespacedKey(this, this.getPluginMeta().getName());
         configFile = new File(getDataFolder(), "inventory-items.json");
         if (!configFile.exists()) saveResource(configFile.getName(), false);
 
@@ -94,6 +94,11 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
     public void onPlayerBreakBlock(BlockBreakEvent e) {
         Player player = e.getPlayer();
         Block block = e.getBlock();
+
+        if(!Utils.isCrop(block) && !Utils.isOre(block)) return;
+
+        Utils.persistBlock(block);
+
         ItemStack tool = player.getInventory().getItemInMainHand();
         int enchantLevel = tool.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS);
 
@@ -109,18 +114,20 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
         double randomValue = Math.random() * 100; // Between 0 and 100
 
         ItemStack addedDrop = block.getDrops().stream().findFirst().orElse(null);
+
         if(addedDrop != null) {
+            addedDrop.setAmount(1);
             // Check to *4 drops first
-            if (randomValue <= chanceQuadruple) {
+            if (randomValue <= chanceQuadruple && !Utils.isBlockPersisted(block)) {
                 player.sendMessage("+4");
                 addedDrop.setAmount(4);
-            } else if (randomValue <= chanceDouble) {
+            } else if (randomValue <= chanceDouble && !Utils.isBlockPersisted(block)) {
                 player.sendMessage("+2");
                 addedDrop.setAmount(2);
             }
 
             Random random = new Random();
-            int enchantLoot = Utils.fortuneEnchantSimulation(enchantLevel, random);
+            int enchantLoot = Utils.fortuneEnchantSimulation(enchantLevel, random, block);
             if(enchantLoot != 0) {
                 addedDrop.setAmount(addedDrop.getAmount() + enchantLoot);
             }

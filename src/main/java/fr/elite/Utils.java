@@ -2,13 +2,17 @@ package fr.elite;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.jeff_media.customblockdata.CustomBlockData;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.codehaus.plexus.util.Base64;
 
 import java.io.File;
@@ -63,8 +67,8 @@ public class Utils {
         return objectMapper.readValue(inputStream, new TypeReference<List<InventoryItem>>() {});
     }
 
-    public static int fortuneEnchantSimulation(int enchantLevel, Random random) {
-        if (enchantLevel > 0) {
+    public static int fortuneEnchantSimulation(int enchantLevel, Random random, Block brokenBlock) {
+        if (enchantLevel > 0 && isOre(brokenBlock)) {
             // Create a list of weights for loots
             List<Integer> weightedDrops = new ArrayList<>();
             weightedDrops.add(1);
@@ -79,5 +83,74 @@ public class Utils {
             return weightedDrops.get(randomIndex);
         }
         return 0; // No Fortune enchantment applied
+    }
+
+    public static void persistBlock(Block block) {
+        if(isCrop(block)) {
+            // Add to Persistent Container //
+            PersistentDataContainer customBlockData = new CustomBlockData(block, Bukkit.getPluginManager().getPlugin("island-totem"));
+            customBlockData.set(Main.totemPluginKey, PersistentDataType.STRING, Main.totemPluginKey.value());
+        }
+    }
+
+    public static boolean isBlockPersisted(Block block) {
+        PersistentDataContainer customBlockData = new CustomBlockData(block, Bukkit.getPluginManager().getPlugin("island-totem"));
+        if(customBlockData.has(Main.totemPluginKey)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isOre(Block block) {
+        Material type = block.getType();
+        switch (type) {
+            case COAL_ORE:
+            case IRON_ORE:
+            case GOLD_ORE:
+            case DIAMOND_ORE:
+            case LAPIS_ORE:
+            case REDSTONE_ORE:
+            case EMERALD_ORE:
+            case NETHER_QUARTZ_ORE:
+            case NETHER_GOLD_ORE:
+            case COPPER_ORE:
+                // Deepslate //
+            case DEEPSLATE_COAL_ORE:
+            case DEEPSLATE_IRON_ORE:
+            case DEEPSLATE_GOLD_ORE:
+            case DEEPSLATE_DIAMOND_ORE:
+            case DEEPSLATE_LAPIS_ORE:
+            case DEEPSLATE_REDSTONE_ORE:
+            case DEEPSLATE_EMERALD_ORE:
+            case DEEPSLATE_COPPER_ORE:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public static boolean isCrop(Block block) {
+        Material type = block.getType();
+        switch (type) {
+            case WHEAT:
+            case POTATOES:
+            case CARROTS:
+            case BEETROOTS:
+            case MELON_STEM:
+            case PUMPKIN_STEM:
+            case NETHER_WART:
+            case SUGAR_CANE:
+            case CACTUS:
+            case BROWN_MUSHROOM:
+            case RED_MUSHROOM:
+            case COCOA:
+            case BAMBOO:
+            case CHORUS_PLANT:
+            case CHORUS_FLOWER:
+            case SWEET_BERRY_BUSH:
+                return true;
+            default:
+                return false;
+        }
     }
 }

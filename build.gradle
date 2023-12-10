@@ -37,6 +37,7 @@ dependencies {
     compileOnly 'com.mojang:authlib:1.5.25'
     compileOnly 'fr.minuskube.inv:smart-invs:1.2.7'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
+    implementation 'com.jeff-media:custom-block-data:2.2.2'
 }
 
 shadowJar {
@@ -44,7 +45,9 @@ shadowJar {
         include(dependency('com.fasterxml.jackson.core:jackson-databind:2.13.0'))
         include(dependency('com.fasterxml.jackson.core:jackson-core:2.13.0'))
         include(dependency('com.fasterxml.jackson.core:jackson-annotations:2.13.0'))
+        include(dependency('com.jeff-media:custom-block-data:2.2.2'))
     }
+    relocate 'com.jeff_media.customblockdata', 'fr.elite'
 }
 
 def targetJavaVersion = 17
