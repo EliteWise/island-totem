@@ -2,6 +2,7 @@ package fr.elite;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.jeff_media.customblockdata.CustomBlockData;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
@@ -9,11 +10,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockGrowEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemBreakEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,7 +31,7 @@ import java.util.Random;
 
 public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNull Listener {
 
-    public static NamespacedKey totemPluginKey;
+    private NamespacedKey totemPluginKey;
 
     HashMap<Character, Material> totemMaterials = new HashMap<>() {{
         put('E', Material.EMERALD_BLOCK);
@@ -49,7 +52,7 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
 
     @Override
     public void onEnable() {
-        totemPluginKey = new NamespacedKey(this, this.getPluginMeta().getName());
+        totemPluginKey = new NamespacedKey(this, "island-totem");
         configFile = new File(getDataFolder(), "inventory-items.json");
         if (!configFile.exists()) saveResource(configFile.getName(), false);
 
@@ -97,8 +100,6 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
 
         if(!Utils.isCrop(block) && !Utils.isOre(block)) return;
 
-        Utils.persistBlock(block);
-
         ItemStack tool = player.getInventory().getItemInMainHand();
         int enchantLevel = tool.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS);
 
@@ -118,10 +119,10 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
         if(addedDrop != null) {
             addedDrop.setAmount(1);
             // Check to *4 drops first
-            if (randomValue <= chanceQuadruple && !Utils.isBlockPersisted(block)) {
+            if (randomValue <= chanceQuadruple && !Utils.isBlockPersisted(block, totemPluginKey)) {
                 player.sendMessage("+4");
                 addedDrop.setAmount(4);
-            } else if (randomValue <= chanceDouble && !Utils.isBlockPersisted(block)) {
+            } else if (randomValue <= chanceDouble && !Utils.isBlockPersisted(block, totemPluginKey)) {
                 player.sendMessage("+2");
                 addedDrop.setAmount(2);
             }
@@ -133,6 +134,23 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
             }
             player.getWorld().dropItemNaturally(block.getLocation(), addedDrop);
         }
+
+    }
+
+    @EventHandler
+    public void onPlayerPlaceBlock(BlockPlaceEvent e) {
+        Block block = e.getBlock();
+        if(Utils.isCrop(block)) {
+            Utils.persistBlock(block, totemPluginKey);
+        }
+    }
+
+    @EventHandler
+    public void onPlantGrow(BlockGrowEvent e) {
+        Block block = e.getBlock();
+        Bukkit.broadcastMessage(block.getType() + "");
+        PersistentDataContainer customBlockData = new CustomBlockData(block, Bukkit.getPluginManager().getPlugin("island-totem"));
+        customBlockData.remove(totemPluginKey);
 
     }
 }

@@ -85,18 +85,28 @@ public class Utils {
         return 0; // No Fortune enchantment applied
     }
 
-    public static void persistBlock(Block block) {
+    public static void persistBlock(Block block, NamespacedKey namespacedKey) {
         if(isCrop(block)) {
             // Add to Persistent Container //
+
             PersistentDataContainer customBlockData = new CustomBlockData(block, Bukkit.getPluginManager().getPlugin("island-totem"));
-            customBlockData.set(Main.totemPluginKey, PersistentDataType.STRING, Main.totemPluginKey.value());
+
+            if (customBlockData.has(namespacedKey, PersistentDataType.STRING)) {
+                String storedValue = customBlockData.get(namespacedKey, PersistentDataType.STRING);
+                Bukkit.broadcastMessage("Bloc déjà cassé ! &a" + storedValue);
+            } else {
+                customBlockData.set(namespacedKey, PersistentDataType.STRING, "test");
+            }
+
         }
     }
 
-    public static boolean isBlockPersisted(Block block) {
-        PersistentDataContainer customBlockData = new CustomBlockData(block, Bukkit.getPluginManager().getPlugin("island-totem"));
-        if(customBlockData.has(Main.totemPluginKey)) {
-            return true;
+    public static boolean isBlockPersisted(Block block, NamespacedKey namespacedKey) {
+        if(isCrop(block)) {
+            PersistentDataContainer customBlockData = new CustomBlockData(block, Bukkit.getPluginManager().getPlugin("island-totem"));
+            if(customBlockData.has(namespacedKey, PersistentDataType.STRING)) {
+                return true;
+            }
         }
         return false;
     }

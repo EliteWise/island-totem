@@ -47,7 +47,7 @@ shadowJar {
         include(dependency('com.fasterxml.jackson.core:jackson-annotations:2.13.0'))
         include(dependency('com.jeff-media:custom-block-data:2.2.2'))
     }
-    relocate 'com.jeff_media.customblockdata', 'fr.elite'
+    relocate 'com.jeff_media.customblockdata', 'fr.elite.customblockdata'
 }
 
 def targetJavaVersion = 17
