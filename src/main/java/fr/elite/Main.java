@@ -5,6 +5,8 @@ import com.google.gson.GsonBuilder;
 import com.jeff_media.customblockdata.CustomBlockData;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.Ageable;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -17,6 +19,7 @@ import org.bukkit.event.player.PlayerItemBreakEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -148,9 +151,28 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
     @EventHandler
     public void onPlantGrow(BlockGrowEvent e) {
         Block block = e.getBlock();
-        Bukkit.broadcastMessage(block.getType() + "");
-        PersistentDataContainer customBlockData = new CustomBlockData(block, Bukkit.getPluginManager().getPlugin("island-totem"));
-        customBlockData.remove(totemPluginKey);
+        BlockData blockData = block.getBlockData();
+
+        if(Utils.isCrop(block)) {
+            PersistentDataContainer customBlockData = new CustomBlockData(block, Bukkit.getPluginManager().getPlugin("island-totem"));
+            if(customBlockData.has(totemPluginKey, PersistentDataType.STRING)) {
+                customBlockData.remove(totemPluginKey);
+            }
+            if(blockData instanceof Ageable) {
+                Ageable ageable = (Ageable) blockData;
+                int currentAge = ageable.getAge();
+                int maxAge = ageable.getMaximumAge();
+                int level = 15;
+                double timeReduction = Utils.calculateTimeReduction(level);
+
+                int newAge = Utils.calculateNewAge(currentAge, maxAge, timeReduction);
+                if(newAge > currentAge) {
+                    ageable.setAge(newAge);
+                    block.setBlockData(ageable);
+                }
+            }
+        }
 
     }
+
 }

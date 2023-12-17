@@ -163,4 +163,15 @@ public class Utils {
                 return false;
         }
     }
+
+    public static double calculateTimeReduction(int level) {
+        return (level * level) / 4.1 + 2.5;
+    }
+
+    public static int calculateNewAge(int currentAge, int maxAge, double timeReduction) {
+        // Calculation of the new age of culture according to the time reduction
+        int ageIncrement = (int) Math.round(timeReduction / 100 * maxAge);
+        int newAge = currentAge + ageIncrement;
+        return Math.min(newAge, maxAge);
+    }
 }
