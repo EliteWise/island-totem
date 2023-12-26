@@ -34,7 +34,8 @@ import java.util.Random;
 
 public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNull Listener {
 
-    private NamespacedKey totemPluginKey;
+    private NamespacedKey preventDupliPluginKey;
+    private NamespacedKey levelPluginKey;
 
     HashMap<Character, Material> totemMaterials = new HashMap<>() {{
         put('E', Material.EMERALD_BLOCK);
@@ -55,7 +56,8 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
 
     @Override
     public void onEnable() {
-        totemPluginKey = new NamespacedKey(this, "island-totem");
+        preventDupliPluginKey = new NamespacedKey(this, "island-totem");
+        levelPluginKey = new NamespacedKey(this, "island-totem");
         configFile = new File(getDataFolder(), "inventory-items.json");
         if (!configFile.exists()) saveResource(configFile.getName(), false);
 
@@ -106,10 +108,10 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
         ItemStack tool = player.getInventory().getItemInMainHand();
         int enchantLevel = tool.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS);
 
-        int niv = 20;
+        int playerLevel = Utils.getPlayerLevel("?", player.getName());
 
         // Chances init
-        double chanceDouble = (niv * niv) / (4.1 + 2.5);
+        double chanceDouble = (playerLevel * playerLevel) / (4.1 + 2.5);
         double chanceQuadruple = chanceDouble / 3;
 
         // Cancel the original drop
@@ -122,10 +124,10 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
         if(addedDrop != null) {
             addedDrop.setAmount(1);
             // Check to *4 drops first
-            if (randomValue <= chanceQuadruple && !Utils.isBlockPersisted(block, totemPluginKey)) {
+            if (randomValue <= chanceQuadruple && !Utils.isBlockPersisted(block, preventDupliPluginKey)) {
                 player.sendMessage("+4");
                 addedDrop.setAmount(4);
-            } else if (randomValue <= chanceDouble && !Utils.isBlockPersisted(block, totemPluginKey)) {
+            } else if (randomValue <= chanceDouble && !Utils.isBlockPersisted(block, preventDupliPluginKey)) {
                 player.sendMessage("+2");
                 addedDrop.setAmount(2);
             }
@@ -143,8 +145,9 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
     @EventHandler
     public void onPlayerPlaceBlock(BlockPlaceEvent e) {
         Block block = e.getBlock();
+        Player player = e.getPlayer();
         if(Utils.isCrop(block)) {
-            Utils.persistBlock(block, totemPluginKey);
+            Utils.persistBlock(block, preventDupliPluginKey, levelPluginKey, player);
         }
     }
 
@@ -155,15 +158,24 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
 
         if(Utils.isCrop(block)) {
             PersistentDataContainer customBlockData = new CustomBlockData(block, Bukkit.getPluginManager().getPlugin("island-totem"));
-            if(customBlockData.has(totemPluginKey, PersistentDataType.STRING)) {
-                customBlockData.remove(totemPluginKey);
+            String placedData = customBlockData.get(preventDupliPluginKey, PersistentDataType.STRING);
+            if(placedData.equalsIgnoreCase("placed")) {
+                customBlockData.remove(preventDupliPluginKey);
             }
+
+            String levelData = customBlockData.get(levelPluginKey, PersistentDataType.STRING);
+            int playerLevel = 0;
+
+
+            if(levelData.matches(".*\\d.*")) {
+                playerLevel = Integer.parseInt(levelData.split("|")[1]);
+            }
+
             if(blockData instanceof Ageable) {
                 Ageable ageable = (Ageable) blockData;
                 int currentAge = ageable.getAge();
                 int maxAge = ageable.getMaximumAge();
-                int level = 15;
-                double timeReduction = Utils.calculateTimeReduction(level);
+                double timeReduction = Utils.calculateTimeReduction(playerLevel);
 
                 int newAge = Utils.calculateNewAge(currentAge, maxAge, timeReduction);
                 if(newAge > currentAge) {

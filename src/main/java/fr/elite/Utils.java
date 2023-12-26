@@ -7,6 +7,7 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -85,18 +86,13 @@ public class Utils {
         return 0; // No Fortune enchantment applied
     }
 
-    public static void persistBlock(Block block, NamespacedKey namespacedKey) {
+    public static void persistBlock(Block block, NamespacedKey preventDupliKey, NamespacedKey levelKey, Player player) {
         if(isCrop(block)) {
             // Add to Persistent Container //
 
             PersistentDataContainer customBlockData = new CustomBlockData(block, Bukkit.getPluginManager().getPlugin("island-totem"));
-
-            if (customBlockData.has(namespacedKey, PersistentDataType.STRING)) {
-                String storedValue = customBlockData.get(namespacedKey, PersistentDataType.STRING);
-                Bukkit.broadcastMessage("Bloc déjà cassé ! &a" + storedValue);
-            } else {
-                customBlockData.set(namespacedKey, PersistentDataType.STRING, "test");
-            }
+            customBlockData.set(preventDupliKey, PersistentDataType.STRING, "placed");
+            customBlockData.set(preventDupliKey, PersistentDataType.STRING, player.getName() + "|" + getPlayerLevel("Farmer", player.getName()));
 
         }
     }
@@ -174,4 +170,11 @@ public class Utils {
         int newAge = currentAge + ageIncrement;
         return Math.min(newAge, maxAge);
     }
+
+    public static int getPlayerLevel(String skill, String playername) {
+        // Get Player level from database
+
+        return 0;
+    }
+
 }
