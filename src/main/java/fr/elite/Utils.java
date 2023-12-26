@@ -26,6 +26,12 @@ import java.io.IOException;
 
 public class Utils {
 
+    /**
+     * Crafts a custom totem with specified materials, pattern, and texture.
+     * @param materials A hashmap of characters and materials representing the recipe shape.
+     * @param pattern An array of strings representing the crafting shape.
+     * @param textureValue The base64 encoded texture value for the totem's appearance.
+     */
     public void craftTotem(HashMap<Character, Material> materials, String[] pattern, String textureValue) {
         if(materials.isEmpty() && pattern.length != 3 && textureValue.isEmpty()) return;
 
@@ -59,6 +65,13 @@ public class Utils {
         Bukkit.getServer().addRecipe(recipe);
     }
 
+    /**
+     * Deserializes a JSON file into a list of InventoryItem objects.
+     * @param filePath The path to the JSON file.
+     * @return A list of InventoryItem objects.
+     * @throws IOException If an I/O error occurs.
+     * @throws JsonProcessingException If the JSON is not formatted correctly.
+     */
     public static List<InventoryItem> deserializeJsonFile(String filePath) throws IOException, JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         InputStream inputStream = Main.class.getClassLoader().getResourceAsStream(filePath);
@@ -68,6 +81,13 @@ public class Utils {
         return objectMapper.readValue(inputStream, new TypeReference<List<InventoryItem>>() {});
     }
 
+    /**
+     * Simulates the effect of the Fortune enchantment on mining.
+     * @param enchantLevel The level of the Fortune enchantment.
+     * @param random A Random object for generating random numbers.
+     * @param brokenBlock The block that was broken.
+     * @return The number of items dropped due to the Fortune enchantment.
+     */
     public static int fortuneEnchantSimulation(int enchantLevel, Random random, Block brokenBlock) {
         if (enchantLevel > 0 && isOre(brokenBlock)) {
             // Create a list of weights for loots
@@ -86,6 +106,13 @@ public class Utils {
         return 0; // No Fortune enchantment applied
     }
 
+    /**
+     * Persists custom data to a block, marking it with a player's name and level.
+     * @param block The block to persist data to.
+     * @param preventDupliKey A NamespacedKey to prevent duplication.
+     * @param levelKey A NamespacedKey representing the player's level.
+     * @param player The player associated with the block.
+     */
     public static void persistBlock(Block block, NamespacedKey preventDupliKey, NamespacedKey levelKey, Player player) {
         if(isCrop(block)) {
             // Add to Persistent Container //
@@ -97,6 +124,12 @@ public class Utils {
         }
     }
 
+    /**
+     * Checks if a block has been persisted with a specific NamespacedKey.
+     * @param block The block to check.
+     * @param namespacedKey The NamespacedKey to look for.
+     * @return True if the block has the specified data, false otherwise.
+     */
     public static boolean isBlockPersisted(Block block, NamespacedKey namespacedKey) {
         if(isCrop(block)) {
             PersistentDataContainer customBlockData = new CustomBlockData(block, Bukkit.getPluginManager().getPlugin("island-totem"));
@@ -107,6 +140,11 @@ public class Utils {
         return false;
     }
 
+    /**
+     * Determines if a given block is an ore block.
+     * @param block The block to check.
+     * @return True if the block is an ore, false otherwise.
+     */
     public static boolean isOre(Block block) {
         Material type = block.getType();
         switch (type) {
@@ -135,6 +173,11 @@ public class Utils {
         }
     }
 
+    /**
+     * Determines if a given block is a crop.
+     * @param block The block to check.
+     * @return True if the block is a crop, false otherwise.
+     */
     public static boolean isCrop(Block block) {
         Material type = block.getType();
         switch (type) {
@@ -160,10 +203,22 @@ public class Utils {
         }
     }
 
+    /**
+     * Calculates the time reduction for the crops to grow based on the player's level.
+     * @param level The player's level.
+     * @return The amount of time reduction.
+     */
     public static double calculateTimeReduction(int level) {
         return (level * level) / 4.1 + 2.5;
     }
 
+    /**
+     * Calculates the new age of a crop based on the current age, maximum age, and time reduction.
+     * @param currentAge The current age of the crop.
+     * @param maxAge The maximum age the crop can reach.
+     * @param timeReduction The reduction in time from the player's level.
+     * @return The new age of the crop.
+     */
     public static int calculateNewAge(int currentAge, int maxAge, double timeReduction) {
         // Calculation of the new age of culture according to the time reduction
         int ageIncrement = (int) Math.round(timeReduction / 100 * maxAge);
@@ -171,6 +226,12 @@ public class Utils {
         return Math.min(newAge, maxAge);
     }
 
+    /**
+     * Retrieves the player's level for a specific skill from the database.
+     * @param skill The name of the skill.
+     * @param playername The name of the player.
+     * @return The player's level for the specified skill.
+     */
     public static int getPlayerLevel(String skill, String playername) {
         // Get Player level from database
 
