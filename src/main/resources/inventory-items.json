@@ -31,7 +31,7 @@
     "material": "EMERALD",
     "lores": [
       "Informations",
-      "Nombres de points disponibles: {points}",
+      "Nombres de points disponibles: {level}",
       "Ajoute un point au totem -> clic droit en tenant une émeraude. La consomme"
     ],
     "message": "Votre compétence passe au niveau suppérieur !",

@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.net.http.WebSocket;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,10 +55,29 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
     public final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     public Map<String, Object> gsonMap = new HashMap<>();
 
+    private Database database;
+    private static Main instance;
+
     @Override
     public void onEnable() {
+        instance = this;
         preventDupliPluginKey = new NamespacedKey(this, "island-totem");
         levelPluginKey = new NamespacedKey(this, "island-totem");
+
+        try {
+            // Ensure the plugin's data folder exists
+            if (!getDataFolder().exists()) {
+                getDataFolder().mkdirs();
+            }
+
+            database = new Database(getDataFolder().getAbsolutePath() + "/totem.db");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Failed to connect to database! " + e.getMessage());
+            Bukkit.getPluginManager().disablePlugin(this);
+        }
+
+
         configFile = new File(getDataFolder(), "inventory-items.json");
         if (!configFile.exists()) saveResource(configFile.getName(), false);
 
@@ -67,7 +87,19 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
 
     @Override
     public void onDisable() {
+        try {
+            database.closeConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
+    public static Main getInstance() {
+        return instance;
+    }
+
+    public Database getDatabase() {
+        return database;
     }
 
     @EventHandler
@@ -81,7 +113,7 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
     }
 
     @EventHandler
-    public void onPlayerClickOnTotem(PlayerInteractEvent e) {
+    public void onPlayerClickOnTotem(PlayerInteractEvent e) throws SQLException {
         Player player = e.getPlayer();
         Block clickedBlock = e.getClickedBlock();
         if(e.getHand() == EquipmentSlot.HAND) return;
@@ -90,7 +122,13 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
         if(clickedBlock.getType() == Material.PLAYER_HEAD) {
             if(itemInHand.getType() == Material.EMERALD) {
                 itemInHand.setAmount(itemInHand.getAmount() - 1);
-                totemPoints.put(player, totemPoints.getOrDefault(player, 0) + 1);
+                //totemPoints.put(player, totemPoints.getOrDefault(player, 0) + 1);
+                if(getDatabase().playerExists(player)) {
+                    int totem_levels = getDatabase().getPlayerAttribute(player, "totem_levels");
+                    getDatabase().updatePlayerAttribute(player, "totem_levels", totem_levels + 1);
+                } else {
+                    getDatabase().addPlayer(player);
+                }
                 player.sendMessage(ChatColor.GOLD + "[Totem d’île] " + ChatColor.YELLOW + "Votre émeraude a été converti en point pour ce totem.");
             } else {
                 InventoryManager.INVENTORY.open(player);
@@ -99,7 +137,7 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
     }
 
     @EventHandler
-    public void onPlayerBreakBlock(BlockBreakEvent e) {
+    public void onPlayerBreakBlock(BlockBreakEvent e) throws SQLException {
         Player player = e.getPlayer();
         Block block = e.getBlock();
 
@@ -108,7 +146,7 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
         ItemStack tool = player.getInventory().getItemInMainHand();
         int enchantLevel = tool.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS);
 
-        int playerLevel = Utils.getPlayerLevel("?", player.getName());
+        int playerLevel = getDatabase().getPlayerAttribute(player, "ores_quantity_level"); // Replace with a dynamic detection of the block type with the right attribute
 
         // Chances init
         double chanceDouble = (playerLevel * playerLevel) / (4.1 + 2.5);
