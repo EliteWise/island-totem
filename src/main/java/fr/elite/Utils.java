@@ -19,6 +19,7 @@ import org.codehaus.plexus.util.Base64;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.sql.SQLException;
 import java.util.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -113,13 +114,12 @@ public class Utils {
      * @param levelKey A NamespacedKey representing the player's level.
      * @param player The player associated with the block.
      */
-    public static void persistBlock(Block block, NamespacedKey preventDupliKey, NamespacedKey levelKey, Player player) {
+    public static void persistBlock(Block block, NamespacedKey preventDupliKey, NamespacedKey levelKey, Player player) throws SQLException {
         if(isCrop(block)) {
             // Add to Persistent Container //
-
             PersistentDataContainer customBlockData = new CustomBlockData(block, Bukkit.getPluginManager().getPlugin("island-totem"));
             customBlockData.set(preventDupliKey, PersistentDataType.STRING, "placed");
-            customBlockData.set(preventDupliKey, PersistentDataType.STRING, player.getName() + "|" + getPlayerLevel("Farmer", player.getName()));
+            customBlockData.set(preventDupliKey, PersistentDataType.STRING, player.getName() + "|" + Main.getInstance().getDatabase().getPlayerAttribute(player, "crops_speed_level"));
 
         }
     }
@@ -224,18 +224,6 @@ public class Utils {
         int ageIncrement = (int) Math.round(timeReduction / 100 * maxAge);
         int newAge = currentAge + ageIncrement;
         return Math.min(newAge, maxAge);
-    }
-
-    /**
-     * Retrieves the player's level for a specific skill from the database.
-     * @param skill The name of the skill.
-     * @param playername The name of the player.
-     * @return The player's level for the specified skill.
-     */
-    public static int getPlayerLevel(String skill, String playername) {
-        // Get Player level from database
-
-        return 0;
     }
 
 }

@@ -93,6 +93,16 @@ public class InventoryManager implements InventoryProvider {
     public void update(Player player, InventoryContents contents) {
     }
 
+    /**
+     * Adds lore and formatting to an ItemStack based on given parameters.
+     *
+     * @param material The material of the item stack to create.
+     * @param loreList A list of lore strings that will be added to the ItemStack.
+     * @param skillPoint The skill points to be inserted into the lore. If -1, it will not replace the placeholder.
+     * @param level The level to be inserted into the lore. If -1, it will not replace the placeholder.
+     * @return The ItemStack with the added lore and formatting.
+     * @throws IOException If there is an error reading from the inventory-items.json file.
+     */
     public ItemStack addItemLores(Material material, List<String> loreList, int skillPoint, int level) throws IOException {
         ItemStack itemStack = new ItemStack(material);
         ItemMeta itemMeta = itemStack.getItemMeta();

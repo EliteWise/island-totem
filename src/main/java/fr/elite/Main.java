@@ -146,7 +146,7 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
         ItemStack tool = player.getInventory().getItemInMainHand();
         int enchantLevel = tool.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS);
 
-        int playerLevel = getDatabase().getPlayerAttribute(player, "ores_quantity_level"); // Replace with a dynamic detection of the block type with the right attribute
+        int playerLevel = getDatabase().getPlayerAttribute(player, Utils.isOre(block) ? "ores_quantity_level" : "crops_quantity_level");
 
         // Chances init
         double chanceDouble = (playerLevel * playerLevel) / (4.1 + 2.5);
@@ -181,7 +181,7 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
     }
 
     @EventHandler
-    public void onPlayerPlaceBlock(BlockPlaceEvent e) {
+    public void onPlayerPlaceBlock(BlockPlaceEvent e) throws SQLException {
         Block block = e.getBlock();
         Player player = e.getPlayer();
         if(Utils.isCrop(block)) {
