@@ -19,10 +19,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class InventoryManager implements InventoryProvider {
 
     public static final SmartInventory INVENTORY = SmartInventory.builder()
-            .id("totem-inv")
+            .id(Constants.TOTEM_INV_ID)
             .provider(new InventoryManager())
             .size(3, 9)
-            .title("Totem d’île")
+            .title(Constants.TOTEM_INV_TITLE)
             .build();
 
     private final Random random = new Random();
@@ -44,7 +44,7 @@ public class InventoryManager implements InventoryProvider {
         Database db = Main.getInstance().getDatabase();
 
         try {
-            List<InventoryItem> inventoryItem = Utils.deserializeJsonFile("inventory-items.json");
+            List<InventoryItem> inventoryItem = Utils.deserializeJsonFile(Constants.TOTEM_INV_JSON_FILE_PATH);
             for(InventoryItem it : inventoryItem) {
                 if(it.getLores().stream().anyMatch(lore -> lore.contains("{points}")) && pointsIndex < skillsPoints.size()) {
                     String attr = dbAttributes.get(pointsIndex);
@@ -66,10 +66,10 @@ public class InventoryManager implements InventoryProvider {
                                         if(dbAttributes.indexOf(attr) != 2) {
                                             db.updatePlayerAttribute(player, attr, db.getPlayerAttribute(player, attr) + 1);
                                             db.updatePlayerAttribute(player, "totem_levels", db.getPlayerAttribute(player, "totem_levels") - 1);
-                                            player.sendMessage(ChatColor.GOLD + "[Totem d’île] " + ChatColor.valueOf(it.getColor()) + it.getMessage());
+                                            player.sendMessage(ChatColor.GOLD + Constants.BASE_MESSAGE + ChatColor.valueOf(it.getColor()) + it.getMessage());
                                         }
                                     } else {
-                                        player.sendMessage(ChatColor.GOLD + "[Totem d’île] " + ChatColor.valueOf(it.getColor()) + "Vous n'avez pas de points totem.");
+                                        player.sendMessage(ChatColor.GOLD + Constants.BASE_MESSAGE + ChatColor.valueOf(it.getColor()) + "Vous n'avez pas de points totem.");
                                     }
                                 } else {
                                     db.addPlayer(player);
@@ -107,7 +107,7 @@ public class InventoryManager implements InventoryProvider {
         ItemStack itemStack = new ItemStack(material);
         ItemMeta itemMeta = itemStack.getItemMeta();
         List<String> formattedLoreList = new ArrayList<>();
-        List<InventoryItem> inventoryItem = Utils.deserializeJsonFile("inventory-items.json");
+        List<InventoryItem> inventoryItem = Utils.deserializeJsonFile(Constants.TOTEM_INV_JSON_FILE_PATH);
         int index = 0;
         for(String lore : loreList) {
             if(skillPoint != -1) {

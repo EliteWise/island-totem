@@ -39,7 +39,7 @@ public class Utils {
         ItemStack output = new ItemStack(Material.PLAYER_HEAD);
 
         SkullMeta outputMeta = (SkullMeta) output.getItemMeta();
-        outputMeta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "Totem d’île");
+        outputMeta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + Constants.TOTEM_INV_TITLE);
         GameProfile profile = new GameProfile(UUID.randomUUID(), null);
         profile.getProperties().put("textures", new Property("textures", textureValue));
         Field profileField = null;
@@ -52,7 +52,7 @@ public class Utils {
         }
         output.setItemMeta(outputMeta);
 
-        NamespacedKey nsKey = new NamespacedKey(Bukkit.getPluginManager().getPlugin("island-totem"), "totem-mk");
+        NamespacedKey nsKey = new NamespacedKey(Bukkit.getPluginManager().getPlugin(Constants.PLUGIN_NAME), "totem-mk");
         ShapedRecipe recipe = new ShapedRecipe(nsKey, output);
 
         recipe.shape(pattern[0], pattern[1], pattern[2]);
@@ -117,9 +117,9 @@ public class Utils {
     public static void persistBlock(Block block, NamespacedKey preventDupliKey, NamespacedKey levelKey, Player player) throws SQLException {
         if(isCrop(block)) {
             // Add to Persistent Container //
-            PersistentDataContainer customBlockData = new CustomBlockData(block, Bukkit.getPluginManager().getPlugin("island-totem"));
-            customBlockData.set(preventDupliKey, PersistentDataType.STRING, "placed");
-            customBlockData.set(preventDupliKey, PersistentDataType.STRING, player.getName() + "|" + Main.getInstance().getDatabase().getPlayerAttribute(player, "crops_speed_level"));
+            PersistentDataContainer customBlockData = new CustomBlockData(block, Bukkit.getPluginManager().getPlugin(Constants.PLUGIN_NAME));
+            customBlockData.set(preventDupliKey, PersistentDataType.STRING, Constants.PERSISTANT_DATA_PREVENT_DUPLI);
+            customBlockData.set(levelKey, PersistentDataType.STRING, player.getName() + "|" + Main.getInstance().getDatabase().getPlayerAttribute(player, "crops_quantity_level"));
 
         }
     }
@@ -132,10 +132,12 @@ public class Utils {
      */
     public static boolean isBlockPersisted(Block block, NamespacedKey namespacedKey) {
         if(isCrop(block)) {
-            PersistentDataContainer customBlockData = new CustomBlockData(block, Bukkit.getPluginManager().getPlugin("island-totem"));
-            if(customBlockData.has(namespacedKey, PersistentDataType.STRING)) {
+            PersistentDataContainer customBlockData = new CustomBlockData(block, Bukkit.getPluginManager().getPlugin(Constants.PLUGIN_NAME));
+            String data = customBlockData.get(namespacedKey, PersistentDataType.STRING);
+            if(data != null && data.equals(Constants.PERSISTANT_DATA_PREVENT_DUPLI)) {
                 return true;
             }
+            return false;
         }
         return false;
     }

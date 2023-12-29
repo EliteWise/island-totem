@@ -16,7 +16,12 @@ public class Constants {
 
     public static final String TOTEM_DB_PATH = "/totem.db";
 
-    public static final String BASE_MESSAGE = "[" + TOTEM_INV_TITLE + "]";
+    public static final String BASE_MESSAGE = "[" + TOTEM_INV_TITLE + "] ";
 
     public static final String PERSISTANT_DATA_PREVENT_DUPLI = "placed";
+
+    public static final long CROPS_UPDATE_TICKS = 1L;
+
+    public static final boolean ACTIVE_LOOGGING = true;
+
 }

@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.jeff_media.customblockdata.CustomBlockData;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.enchantments.Enchantment;
@@ -12,12 +13,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockFertilizeEvent;
 import org.bukkit.event.block.BlockGrowEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemBreakEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.Crops;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -32,6 +35,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.logging.Level;
 
 public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNull Listener {
 
@@ -44,8 +48,6 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
         put('H', Material.DIAMOND_HOE);
         put('R', Material.AIR);
     }};
-    String[] totemCraftPattern = {"EPE", "HRH", "EPE"};
-    String textureValue = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZDkzNmJiMWNjNGFiNmVjY2U2NWI2NDI5ODM5NGZhZmM1ZmUzZjc4NzZkN2M5NDFkMDVhOTI5NGZhMzkyYjdjIn19fQ==";
 
     Utils utils = new Utils();
 
@@ -61,8 +63,8 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
     @Override
     public void onEnable() {
         instance = this;
-        preventDupliPluginKey = new NamespacedKey(this, "island-totem");
-        levelPluginKey = new NamespacedKey(this, "island-totem");
+        preventDupliPluginKey = new NamespacedKey(this, Constants.PLUGIN_NAME + Constants.PERSISTANT_DATA_PREVENT_DUPLI);
+        levelPluginKey = new NamespacedKey(this, Constants.PLUGIN_NAME);
 
         try {
             // Ensure the plugin's data folder exists
@@ -82,7 +84,7 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
         if (!configFile.exists()) saveResource(configFile.getName(), false);
 
         this.getServer().getPluginManager().registerEvents(this, this);
-        utils.craftTotem(totemMaterials, totemCraftPattern, textureValue);
+        utils.craftTotem(totemMaterials, Constants.TOTEM_HEAD_CRAFT_PATTERN, Constants.TOTEM_HEAD_TEXTURE_VALUE);
     }
 
     @Override
@@ -107,7 +109,7 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
         Block placedBlock = e.getBlockPlaced();
         Player player = e.getPlayer();
         ItemStack itemInHand = e.getItemInHand();
-        if(placedBlock.getType() == Material.PLAYER_HEAD && itemInHand.getItemMeta().getDisplayName().contains("Totem d’île")) {
+        if(placedBlock.getType() == Material.PLAYER_HEAD && itemInHand.getItemMeta().getDisplayName().contains(Constants.TOTEM_INV_TITLE)) {
             Bukkit.getServer().getWorld(player.getWorld().getName()).playSound(player.getLocation(), Sound.ITEM_GOAT_HORN_SOUND_0, 1, 1);
         }
     }
@@ -129,7 +131,7 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
                 } else {
                     getDatabase().addPlayer(player);
                 }
-                player.sendMessage(ChatColor.GOLD + "[Totem d’île] " + ChatColor.YELLOW + "Votre émeraude a été converti en point pour ce totem.");
+                player.sendMessage(ChatColor.GOLD + Constants.BASE_MESSAGE + ChatColor.YELLOW + "Votre émeraude a été converti en point pour ce totem.");
             } else {
                 InventoryManager.INVENTORY.open(player);
             }
@@ -162,11 +164,11 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
         if(addedDrop != null) {
             addedDrop.setAmount(1);
             // Check to *4 drops first
-            if (randomValue <= chanceQuadruple && !Utils.isBlockPersisted(block, preventDupliPluginKey)) {
-                player.sendMessage("+4");
+            if ((randomValue <= chanceQuadruple) && !Utils.isBlockPersisted(block, preventDupliPluginKey)) {
+                if(Constants.ACTIVE_LOOGGING) getLogger().log(Level.FINEST,"+4");
                 addedDrop.setAmount(4);
-            } else if (randomValue <= chanceDouble && !Utils.isBlockPersisted(block, preventDupliPluginKey)) {
-                player.sendMessage("+2");
+            } else if ((randomValue <= chanceDouble) && !Utils.isBlockPersisted(block, preventDupliPluginKey)) {
+                if(Constants.ACTIVE_LOOGGING) getLogger().log(Level.FINEST,"+2");
                 addedDrop.setAmount(2);
             }
 
@@ -195,9 +197,8 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
         BlockData blockData = block.getBlockData();
 
         if(Utils.isCrop(block)) {
-            PersistentDataContainer customBlockData = new CustomBlockData(block, Bukkit.getPluginManager().getPlugin("island-totem"));
-            String placedData = customBlockData.get(preventDupliPluginKey, PersistentDataType.STRING);
-            if(placedData.equalsIgnoreCase("placed")) {
+            PersistentDataContainer customBlockData = new CustomBlockData(block, Bukkit.getPluginManager().getPlugin(Constants.PLUGIN_NAME));
+            if(Utils.isBlockPersisted(block, preventDupliPluginKey)) {
                 customBlockData.remove(preventDupliPluginKey);
             }
 
@@ -206,7 +207,8 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
 
 
             if(levelData.matches(".*\\d.*")) {
-                playerLevel = Integer.parseInt(levelData.split("|")[1]);
+                playerLevel = Integer.parseInt(levelData.split("\\|")[1]);
+                if(Constants.ACTIVE_LOOGGING) getLogger().log(Level.FINEST, "crops_quantity_level: §c" + playerLevel);
             }
 
             if(blockData instanceof Ageable) {
@@ -217,12 +219,33 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
 
                 int newAge = Utils.calculateNewAge(currentAge, maxAge, timeReduction);
                 if(newAge > currentAge) {
-                    ageable.setAge(newAge);
-                    block.setBlockData(ageable);
+                    // Get a copy of the BlockState, modify it, then update the block with the new state
+                    BlockState state = block.getState();
+                    Ageable stateAgeable = (Ageable) state.getBlockData();
+                    stateAgeable.setAge(newAge);
+                    state.setBlockData(stateAgeable);
+                    // Apply the updated state back to the block
+
+                    if(Constants.ACTIVE_LOOGGING) getLogger().log(Level.FINEST, "Crop Age Updated: §c" + stateAgeable.getAge());
+
+                    Bukkit.getScheduler().scheduleSyncDelayedTask(Bukkit.getPluginManager().getPlugin(Constants.PLUGIN_NAME), () -> {
+                        state.update(true, true);
+                        if(Constants.ACTIVE_LOOGGING) getLogger().log(Level.FINER, "Crop Updated");
+                    }, Constants.CROPS_UPDATE_TICKS);
                 }
             }
         }
 
+    }
+
+    @EventHandler
+    public void onPlayerUseBoneMeal(BlockFertilizeEvent e) {
+        Block block = e.getBlock();
+
+        if(Utils.isCrop(block) && Utils.isBlockPersisted(block, preventDupliPluginKey)) {
+            PersistentDataContainer customBlockData = new CustomBlockData(block, Bukkit.getPluginManager().getPlugin(Constants.PLUGIN_NAME));
+            customBlockData.remove(preventDupliPluginKey);
+        }
     }
 
 }
