@@ -119,7 +119,10 @@ public class Utils {
             // Add to Persistent Container //
             PersistentDataContainer customBlockData = new CustomBlockData(block, Bukkit.getPluginManager().getPlugin(Constants.PLUGIN_NAME));
             customBlockData.set(preventDupliKey, PersistentDataType.STRING, Constants.PERSISTANT_DATA_PREVENT_DUPLI);
-            customBlockData.set(levelKey, PersistentDataType.STRING, player.getName() + "|" + Main.getInstance().getDatabase().getPlayerAttribute(player, "crops_quantity_level"));
+            customBlockData.set(levelKey, PersistentDataType.STRING, player.getName()
+                    + "|" + Main.getInstance().getDatabase().getPlayerAttribute(player, "crops_quantity_level")
+                    + "|" + Main.getInstance().getDatabase().getPlayerAttribute(player, "crops_speed_level")
+                    + "|" + Main.getInstance().getDatabase().getPlayerAttribute(player, "ores_quantity_level"));
 
         }
     }

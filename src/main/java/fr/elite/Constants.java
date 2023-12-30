@@ -22,6 +22,6 @@ public class Constants {
 
     public static final long CROPS_UPDATE_TICKS = 1L;
 
-    public static final boolean ACTIVE_LOOGGING = true;
+    public static final boolean ACTIVE_LOOGGING = false;
 
 }

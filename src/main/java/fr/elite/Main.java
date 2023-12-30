@@ -148,7 +148,14 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
         ItemStack tool = player.getInventory().getItemInMainHand();
         int enchantLevel = tool.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS);
 
-        int playerLevel = getDatabase().getPlayerAttribute(player, Utils.isOre(block) ? "ores_quantity_level" : "crops_quantity_level");
+        PersistentDataContainer customBlockData = new CustomBlockData(block, Bukkit.getPluginManager().getPlugin(Constants.PLUGIN_NAME));
+
+        String levelData = customBlockData.get(levelPluginKey, PersistentDataType.STRING);
+        int playerLevel = 0;
+
+        if(levelData.matches(".*\\d.*")) {
+            playerLevel =  Utils.isOre(block) ? Integer.parseInt(levelData.split("\\|")[3]) : Integer.parseInt(levelData.split("\\|")[1]);
+        }
 
         // Chances init
         double chanceDouble = (playerLevel * playerLevel) / (4.1 + 2.5);
@@ -165,10 +172,10 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
             addedDrop.setAmount(1);
             // Check to *4 drops first
             if ((randomValue <= chanceQuadruple) && !Utils.isBlockPersisted(block, preventDupliPluginKey)) {
-                if(Constants.ACTIVE_LOOGGING) getLogger().log(Level.FINEST,"+4");
+                if(Constants.ACTIVE_LOOGGING) getLogger().log(Level.INFO,"+4");
                 addedDrop.setAmount(4);
             } else if ((randomValue <= chanceDouble) && !Utils.isBlockPersisted(block, preventDupliPluginKey)) {
-                if(Constants.ACTIVE_LOOGGING) getLogger().log(Level.FINEST,"+2");
+                if(Constants.ACTIVE_LOOGGING) getLogger().log(Level.INFO,"+2");
                 addedDrop.setAmount(2);
             }
 
@@ -205,10 +212,9 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
             String levelData = customBlockData.get(levelPluginKey, PersistentDataType.STRING);
             int playerLevel = 0;
 
-
             if(levelData.matches(".*\\d.*")) {
-                playerLevel = Integer.parseInt(levelData.split("\\|")[1]);
-                if(Constants.ACTIVE_LOOGGING) getLogger().log(Level.FINEST, "crops_quantity_level: §c" + playerLevel);
+                playerLevel = Integer.parseInt(levelData.split("\\|")[2]);
+                if(Constants.ACTIVE_LOOGGING) getLogger().log(Level.INFO, "crops_quantity_level: §c" + playerLevel);
             }
 
             if(blockData instanceof Ageable) {
@@ -226,11 +232,11 @@ public final class Main extends JavaPlugin implements WebSocket.Listener, @NotNu
                     state.setBlockData(stateAgeable);
                     // Apply the updated state back to the block
 
-                    if(Constants.ACTIVE_LOOGGING) getLogger().log(Level.FINEST, "Crop Age Updated: §c" + stateAgeable.getAge());
+                    if(Constants.ACTIVE_LOOGGING) getLogger().log(Level.INFO, "Crop Age Updated: §c" + stateAgeable.getAge());
 
                     Bukkit.getScheduler().scheduleSyncDelayedTask(Bukkit.getPluginManager().getPlugin(Constants.PLUGIN_NAME), () -> {
                         state.update(true, true);
-                        if(Constants.ACTIVE_LOOGGING) getLogger().log(Level.FINER, "Crop Updated");
+                        if(Constants.ACTIVE_LOOGGING) Bukkit.getLogger().log(Level.INFO, "Crop Updated");
                     }, Constants.CROPS_UPDATE_TICKS);
                 }
             }
